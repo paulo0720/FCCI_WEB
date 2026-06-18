@@ -67,7 +67,12 @@ def fetch_member_with_photo(cursor, member_id):
 
     Kung walang member na nahanap, nagbabalik ng None.
     """
-    cursor.execute("SELECT * FROM members WHERE member_id = %s", (member_id,))
+    cursor.execute("""
+    SELECT id, member_id, full_name, contact, address,
+        registration_fee, member_since, email, birthday,
+        date_registered, status, proof_of_payment
+    FROM members WHERE member_id = %s
+    """, (member_id,))
     row = cursor.fetchone()
 
     if row is None:
@@ -91,7 +96,7 @@ def fetch_all_members_with_photo(cursor, where_clause="", params=()):
     PLUS photo_path bilang huling column ng bawat row. Ginagamit ito
     sa mga listahan tulad ng registration_approval at members list.
     """
-    query = "SELECT * FROM members"
+    query = "SELECT id, member_id, full_name, contact, address, registration_fee, member_since, email, birthday, date_registered, status, proof_of_payment FROM members"
     if where_clause:
         query += f" WHERE {where_clause}"
 
@@ -2415,7 +2420,9 @@ def withdrawal_certificate(member_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT *
+    SELECT id, member_id, full_name, contact, address,
+        registration_fee, member_since, email, birthday,
+        date_registered, status, proof_of_payment
     FROM members
     WHERE member_id = %s
     """, (member_id,))
@@ -2674,7 +2681,9 @@ def member_profile_pdf(member_id):
     cursor = conn.cursor()
 
     cursor.execute("""
-    SELECT *
+    SELECT id, member_id, full_name, contact, address,
+        registration_fee, member_since, email, birthday,
+        date_registered, status, proof_of_payment
     FROM members
     WHERE member_id = %s
     """, (member_id,))
@@ -3622,8 +3631,12 @@ def applicant_slip(member_id):
     conn = get_db()
     cursor = conn.cursor()
 
+    # Explicit columns para matiyak ang tamang order sa PostgreSQL
     cursor.execute("""
-    SELECT *
+    SELECT
+        id, member_id, full_name, contact, address,
+        registration_fee, member_since, email, birthday,
+        date_registered, status, proof_of_payment
     FROM members
     WHERE member_id=%s
     """, (
@@ -3707,26 +3720,10 @@ def applicant_slip(member_id):
         Spacer(1,20)
     )
 
-    if member[11]:
-
-        photo_path = (
-            "static/uploads/" +
-            member[11]
-        )
-
-        if os.path.exists(photo_path):
-
-            content.append(
-                Image(
-                    photo_path,
-                    width=120,
-                    height=120
-                )
-            )
-
-            content.append(
-                Spacer(1,10)
-            )
+    # member[11] = proof_of_payment (not photo)
+    # Photo comes from member_photos table via fetch_member_with_photo
+    # For PDF, we skip photo since it's now a Cloudinary URL
+    # (ReportLab needs local file path or URL download)
 
     content.append(
         Image(
@@ -4653,7 +4650,12 @@ def member_portal_profile():
     conn = get_db()
     cursor = conn.cursor()
 
-    cursor.execute("SELECT * FROM members WHERE member_id = %s", (session["member_id"],))
+    cursor.execute("""
+    SELECT id, member_id, full_name, contact, address,
+        registration_fee, member_since, email, birthday,
+        date_registered, status, proof_of_payment
+    FROM members WHERE member_id = %s
+    """, (session["member_id"],))
     member = cursor.fetchone()
 
     cursor.execute("""
