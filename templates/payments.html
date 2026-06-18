@@ -151,6 +151,7 @@ td { font-size:13.5px; color:var(--text-main); padding:11px 6px; border-bottom:1
   <nav class="sidebar-nav">
     <div class="nav-label">Main</div>
     <a href="/dashboard"><span class="nav-icon">⬡</span> Dashboard</a>
+    <a href="/admin_feed"><span class="nav-icon">📰</span> Community Feed</a>
 
     <div class="nav-label">Members</div>
     <a href="/members"><span class="nav-icon">◈</span> Members</a>
@@ -187,6 +188,13 @@ td { font-size:13.5px; color:var(--text-main); padding:11px 6px; border-bottom:1
   </div>
 
   <div class="glass-card">
+
+    {% if duplicate_error %}
+    <div style="background:rgba(220,53,69,0.1);border:1px solid rgba(220,53,69,0.3);border-radius:12px;padding:14px 18px;margin-bottom:18px;color:#c0392b;font-size:13.5px;font-weight:600;">
+      ⚠️ {{ duplicate_error }}
+    </div>
+    {% endif %}
+
     <form method="POST" id="paymentForm">
       <div class="row g-3">
         <div class="col-md-4">
@@ -195,7 +203,7 @@ td { font-size:13.5px; color:var(--text-main); padding:11px 6px; border-bottom:1
         </div>
         <div class="col-md-4">
           <label>Payment Type</label>
-          <select name="payment_type" class="form-select" required>
+          <select name="payment_type" id="payment_type" class="form-select" required>
             <option value="Registration Fee">Registration Fee</option>
             <option value="Monthly Contribution">Monthly Contribution</option>
           </select>
@@ -204,7 +212,7 @@ td { font-size:13.5px; color:var(--text-main); padding:11px 6px; border-bottom:1
       <div class="row g-3 mt-1">
         <div class="col-md-4">
           <label>Month</label>
-          <select name="payment_month" class="form-select">
+          <select name="payment_month" id="payment_month" class="form-select">
             <option>January</option><option>February</option><option>March</option><option>April</option>
             <option>May</option><option>June</option><option>July</option><option>August</option>
             <option>September</option><option>October</option><option>November</option><option>December</option>
@@ -212,14 +220,24 @@ td { font-size:13.5px; color:var(--text-main); padding:11px 6px; border-bottom:1
         </div>
         <div class="col-md-4">
           <label>Year</label>
-          <select name="payment_year" class="form-select">
+          <select name="payment_year" id="payment_year" class="form-select">
             <option>2025</option><option>2026</option><option>2027</option><option>2028</option><option>2029</option><option>2030</option>
           </select>
         </div>
       </div>
       <br>
-      <button class="btn-go">Save Payment</button>
+      <button class="btn-go" id="submitPaymentBtn">Save Payment</button>
     </form>
+  </div>
+
+  <!-- DUPLICATE PAYMENT WARNING MODAL -->
+  <div id="duplicateModal" style="display:none;position:fixed;inset:0;background:rgba(10,30,20,0.45);backdrop-filter:blur(4px);z-index:200;align-items:center;justify-content:center;padding:20px;">
+    <div style="background:#fff;border-radius:20px;padding:28px;max-width:420px;width:100%;box-shadow:0 20px 50px rgba(0,50,30,0.25);text-align:center;">
+      <div style="font-size:42px;margin-bottom:10px;">⚠️</div>
+      <h4 style="font-family:'Space Grotesk', sans-serif;color:#c0392b;margin-bottom:12px;">Duplicate Payment Detected</h4>
+      <p id="duplicateModalMessage" style="font-size:14px;color:var(--text-dim);margin-bottom:20px;"></p>
+      <button onclick="document.getElementById('duplicateModal').style.display='none'" class="btn-go" style="background:linear-gradient(135deg,#c0392b,#e05d4c);">OK, Naintindihan</button>
+    </div>
   </div>
 
   <div class="glass-card">
@@ -284,6 +302,46 @@ function onScanSuccess(decodedText) {
     scannerActive = false;
   }
 }
+
+// ── DUPLICATE PAYMENT CHECK BEFORE SUBMIT ──────────────────
+document.getElementById('paymentForm').addEventListener('submit', function(e) {
+
+  e.preventDefault();
+
+  const memberId = document.getElementById('member_id').value.trim();
+  const paymentType = document.getElementById('payment_type').value;
+  const paymentMonth = document.getElementById('payment_month').value;
+  const paymentYear = document.getElementById('payment_year').value;
+
+  if (!memberId) {
+    this.submit();
+    return;
+  }
+
+  const params = new URLSearchParams({
+    member_id: memberId,
+    payment_type: paymentType,
+    payment_month: paymentMonth,
+    payment_year: paymentYear
+  });
+
+  fetch(`/check_duplicate_payment?${params.toString()}`)
+    .then(res => res.json())
+    .then(data => {
+      if (data.duplicate) {
+        document.getElementById('duplicateModalMessage').textContent = data.message;
+        document.getElementById('duplicateModal').style.display = 'flex';
+      } else {
+        // Walang duplicate, ituloy ang form submission
+        document.getElementById('paymentForm').submit();
+      }
+    })
+    .catch(() => {
+      // Kung nagka-error ang check (hal. network issue), ituloy pa rin
+      // ang submit — ang server-side validation ang huling depensa.
+      document.getElementById('paymentForm').submit();
+    });
+});
 </script>
 
 </body>

@@ -83,7 +83,7 @@ body::before {
 .sidebar-footer { padding:16px 12px; border-top:1px solid var(--glass-border); }
 .sidebar-footer a.logout:hover { background:rgba(220,53,69,0.08); border-color:rgba(220,53,69,0.25); color:#c0392b; }
 .main-content { margin-left:250px; padding:32px 36px; position:relative; z-index:1; }
-.topbar h4 { font-family:'Space Grotesk', sans-serif; font-size:26px; font-weight:600; color:var(--text-main); margin-bottom:24px; }
+.topbar h4 { font-family:'Space Grotesk', sans-serif; font-size:26px; font-weight:600; color:var(--text-main); margin-bottom:0; }
 .glass-card {
   background:var(--glass); backdrop-filter:blur(18px); border:1px solid var(--glass-border);
   border-radius:18px; padding:22px; box-shadow:0 4px 20px rgba(0,100,60,0.06); margin-bottom:20px;
@@ -114,16 +114,14 @@ td { font-size:13.5px; color:var(--text-main); padding:11px 6px; border-bottom:1
 .btn-delete { background:rgba(220,53,69,0.12); color:#c0392b; }
 .pill { font-size:12.5px; font-weight:600; padding:4px 12px; border-radius:20px; border:1px solid rgba(0,196,106,0.3); background:rgba(0,196,106,0.12); color:var(--emerald-deep); }
 
-
-  .scan-fab {
-    background:rgba(0,196,106,0.06); border:1px dashed rgba(0,196,106,0.35);
-    border-radius:10px; padding:11px 14px; margin-bottom:14px;
-    display:flex; align-items:center; gap:10px; cursor:pointer;
-    color:var(--emerald-deep); font-size:13.5px; font-weight:600;
-  }
-  .scan-fab:hover { background:rgba(0,196,106,0.12); }
-  #readerBox { display:none; margin-bottom:16px; border-radius:14px; overflow:hidden; }
-
+.scan-fab {
+  background:rgba(0,196,106,0.06); border:1px dashed rgba(0,196,106,0.35);
+  border-radius:10px; padding:11px 14px; margin-bottom:14px;
+  display:flex; align-items:center; gap:10px; cursor:pointer;
+  color:var(--emerald-deep); font-size:13.5px; font-weight:600;
+}
+.scan-fab:hover { background:rgba(0,196,106,0.12); }
+#readerBox { display:none; margin-bottom:16px; border-radius:14px; overflow:hidden; }
 </style>
 </head>
 <body>
@@ -138,6 +136,7 @@ td { font-size:13.5px; color:var(--text-main); padding:11px 6px; border-bottom:1
   <nav class="sidebar-nav">
     <div class="nav-label">Main</div>
     <a href="/dashboard"><span class="nav-icon">⬡</span> Dashboard</a>
+    <a href="/admin_feed"><span class="nav-icon">📰</span> Community Feed</a>
 
     <div class="nav-label">Members</div>
     <a href="/members" class="active"><span class="nav-icon">◈</span> Members</a>
@@ -163,12 +162,13 @@ td { font-size:13.5px; color:var(--text-main); padding:11px 6px; border-bottom:1
 
 <div class="main-content">
 
-  <div class="topbar"><h4>👥 Member Management</h4></div>
+  <div class="topbar" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:24px;">
+    <h4>👥 Member Management</h4>
+    <a href="/add_member" class="btn-go">➕ Add Member</a>
+  </div>
 
   <div class="scan-fab" onclick="startScanner()">📷 Scan Member QR Code</div>
   <div id="readerBox"></div>
-
-  <div class="topbar"><h4>👥 Member Management</h4></div>
 
   <form method="GET" class="mb-3">
     <div class="row g-2">

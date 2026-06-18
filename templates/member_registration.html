@@ -9,175 +9,69 @@
 
 <style>
   :root {
-    --bg-base: #f4fbf7;
-    --bg-mist: #e9f7ef;
-    --glass: rgba(255,255,255,0.7);
-    --glass-border: rgba(0,150,90,0.18);
-    --emerald: #00a85c;
-    --emerald-bright: #00c46a;
-    --emerald-deep: #00562a;
-    --text-main: #0c2418;
-    --text-dim: #5c8270;
+    --bg-base: #f4fbf7; --bg-mist: #e9f7ef;
+    --glass: rgba(255,255,255,0.7); --glass-border: rgba(0,150,90,0.18);
+    --emerald: #00a85c; --emerald-bright: #00c46a; --emerald-deep: #00562a;
+    --text-main: #0c2418; --text-dim: #5c8270;
   }
-
   * { box-sizing:border-box; }
-
   body {
-    font-family:'Inter', sans-serif;
-    margin:0;
+    font-family:'Inter', sans-serif; margin:0;
     background:
       radial-gradient(circle at 12% 8%, rgba(0,196,106,0.16) 0%, transparent 40%),
       radial-gradient(circle at 88% 18%, rgba(0,168,92,0.12) 0%, transparent 45%),
       radial-gradient(circle at 50% 95%, rgba(57,255,176,0.10) 0%, transparent 50%),
       linear-gradient(160deg, #ffffff 0%, var(--bg-base) 45%, var(--bg-mist) 100%);
-    background-attachment:fixed;
-    color:var(--text-main);
-    min-height:100vh;
+    background-attachment:fixed; color:var(--text-main); min-height:100vh;
   }
-
   body::before {
-    content:'';
-    position:fixed;
-    inset:0;
+    content:''; position:fixed; inset:0;
     background-image:
       linear-gradient(rgba(0,150,90,0.05) 1px, transparent 1px),
       linear-gradient(90deg, rgba(0,150,90,0.05) 1px, transparent 1px);
     background-size:48px 48px;
     mask-image:radial-gradient(circle at 50% 10%, rgba(0,0,0,0.5) 0%, transparent 65%);
-    pointer-events:none;
-    z-index:0;
+    pointer-events:none; z-index:0;
   }
-
-  .reg-wrap {
-    max-width:640px;
-    margin:0 auto;
-    padding:48px 20px;
-    position:relative;
-    z-index:1;
-  }
-
+  .reg-wrap { max-width:640px; margin:0 auto; padding:48px 20px; position:relative; z-index:1; }
   .reg-header { text-align:center; margin-bottom:28px; }
-
   .reg-logo-ring {
-    width:80px; height:80px;
-    border-radius:50%;
-    margin:0 auto 14px;
-    position:relative;
+    width:80px; height:80px; border-radius:50%; margin:0 auto 14px; position:relative;
     display:flex; align-items:center; justify-content:center;
     background:radial-gradient(circle, rgba(0,196,106,0.18), transparent 70%);
   }
-
   .reg-logo-ring::before {
-    content:'';
-    position:absolute;
-    inset:0;
-    border-radius:50%;
-    border:1px solid var(--emerald);
-    opacity:0.55;
-    animation:pulse-ring 2.8s ease-out infinite;
+    content:''; position:absolute; inset:0; border-radius:50%;
+    border:1px solid var(--emerald); opacity:0.55; animation:pulse-ring 2.8s ease-out infinite;
   }
-
   @keyframes pulse-ring {
-    0%   { transform:scale(0.85); opacity:0.7; }
-    70%  { transform:scale(1.25); opacity:0; }
+    0% { transform:scale(0.85); opacity:0.7; }
+    70% { transform:scale(1.25); opacity:0; }
     100% { transform:scale(1.25); opacity:0; }
   }
-
-  .reg-logo-ring img {
-    width:58px; height:58px;
-    object-fit:contain;
-    border-radius:50%;
-    position:relative;
-    z-index:1;
-    box-shadow:0 2px 12px rgba(0,100,60,0.15);
-  }
-
-  .reg-header h2 {
-    font-family:'Space Grotesk', sans-serif;
-    font-size:26px;
-    font-weight:700;
-    color:var(--emerald-deep);
-  }
-
-  .reg-header p {
-    font-size:13px;
-    color:var(--text-dim);
-    letter-spacing:0.5px;
-  }
-
-  .reg-card {
-    background:var(--glass);
-    backdrop-filter:blur(20px);
-    border:1px solid var(--glass-border);
-    border-radius:22px;
-    padding:34px 36px;
-    box-shadow:0 8px 30px rgba(0,150,90,0.1);
-  }
-
+  .reg-logo-ring img { width:58px; height:58px; object-fit:contain; border-radius:50%; position:relative; z-index:1; box-shadow:0 2px 12px rgba(0,100,60,0.15); }
+  .reg-header h2 { font-family:'Space Grotesk', sans-serif; font-size:26px; font-weight:700; color:var(--emerald-deep); }
+  .reg-header p { font-size:13px; color:var(--text-dim); letter-spacing:0.5px; }
+  .reg-card { background:var(--glass); backdrop-filter:blur(20px); border:1px solid var(--glass-border); border-radius:22px; padding:34px 36px; box-shadow:0 8px 30px rgba(0,150,90,0.1); }
   .form-group { margin-bottom:18px; }
-
-  .form-group label {
-    display:block;
-    font-size:12px;
-    font-weight:600;
-    color:var(--emerald-deep);
-    letter-spacing:0.5px;
-    text-transform:uppercase;
-    margin-bottom:6px;
-  }
-
+  .form-group label { display:block; font-size:12px; font-weight:600; color:var(--emerald-deep); letter-spacing:0.5px; text-transform:uppercase; margin-bottom:6px; }
   .form-control, textarea.form-control {
-    background:rgba(255,255,255,0.8);
-    border:1px solid var(--glass-border);
-    border-radius:12px;
-    padding:12px 16px;
-    font-size:14.5px;
-    color:var(--text-main);
-    width:100%;
+    background:rgba(255,255,255,0.8); border:1px solid var(--glass-border); border-radius:12px;
+    padding:12px 16px; font-size:14.5px; color:var(--text-main); width:100%;
     transition:border-color 0.2s, box-shadow 0.2s;
   }
-
   .form-control::placeholder { color:#9bb8a8; }
-
-  .form-control:focus, textarea.form-control:focus {
-    outline:none;
-    border-color:var(--emerald);
-    box-shadow:0 0 0 3px rgba(0,196,106,0.15);
-  }
-
-  input[type="file"].form-control {
-    padding:9px 14px;
-  }
-
+  .form-control:focus, textarea.form-control:focus { outline:none; border-color:var(--emerald); box-shadow:0 0 0 3px rgba(0,196,106,0.15); }
+  input[type="file"].form-control { padding:9px 14px; }
   .btn-submit {
-    background:linear-gradient(135deg, var(--emerald-deep), var(--emerald));
-    color:#fff;
-    border:none;
-    border-radius:12px;
-    padding:13px 0;
-    width:100%;
-    font-weight:600;
-    font-size:15px;
-    letter-spacing:0.4px;
-    box-shadow:0 6px 20px rgba(0,168,92,0.3);
-    transition:transform 0.2s, box-shadow 0.2s;
+    background:linear-gradient(135deg, var(--emerald-deep), var(--emerald)); color:#fff; border:none;
+    border-radius:12px; padding:13px 0; width:100%; font-weight:600; font-size:15px; letter-spacing:0.4px;
+    box-shadow:0 6px 20px rgba(0,168,92,0.3); transition:transform 0.2s, box-shadow 0.2s;
   }
-
-  .btn-submit:hover {
-    transform:translateY(-2px);
-    box-shadow:0 10px 26px rgba(0,168,92,0.4);
-  }
-
-  .row-fields {
-    display:flex;
-    gap:16px;
-  }
-
+  .btn-submit:hover { transform:translateY(-2px); box-shadow:0 10px 26px rgba(0,168,92,0.4); }
+  .row-fields { display:flex; gap:16px; }
   .row-fields .form-group { flex:1; }
-
-  @media (max-width:560px) {
-    .row-fields { flex-direction:column; gap:0; }
-  }
+  @media (max-width:560px) { .row-fields { flex-direction:column; gap:0; } }
 </style>
 </head>
 
@@ -186,15 +80,12 @@
 <div class="reg-wrap">
 
   <div class="reg-header">
-    <div class="reg-logo-ring">
-      <img src="{{ url_for('static', filename='fcci_logo.jpeg') }}" alt="FCCI">
-    </div>
+    <div class="reg-logo-ring"><img src="{{ url_for('static', filename='fcci_logo.jpeg') }}" alt="FCCI"></div>
     <h2>FCCI Online Registration</h2>
     <p>Filipino Community Center International</p>
   </div>
 
   <div class="reg-card">
-
     <form method="POST" enctype="multipart/form-data">
 
       <div class="form-group">
@@ -207,7 +98,6 @@
           <label>Contact Number</label>
           <input type="text" name="contact" class="form-control" placeholder="01012340000" required>
         </div>
-
         <div class="form-group">
           <label>Birthday</label>
           <input type="date" name="birthday" class="form-control">
@@ -232,7 +122,6 @@
       <button type="submit" class="btn-submit">Submit Registration</button>
 
     </form>
-
   </div>
 
 </div>
