@@ -337,9 +337,16 @@ def dashboard():
 
     # RECENT PAYMENTS
     cursor.execute("""
-    SELECT member_id, amount
-    FROM payments
-    ORDER BY id DESC
+    SELECT
+        p.member_id,
+        p.amount,
+        m.full_name,
+        p.payment_type,
+        p.payment_month,
+        p.payment_year
+    FROM payments p
+    LEFT JOIN members m ON p.member_id = m.member_id
+    ORDER BY p.id DESC
     LIMIT 10
     """)
     recent_payments = cursor.fetchall()
@@ -940,6 +947,57 @@ def check_duplicate_payment():
         return jsonify({"duplicate": False})
 
 
+@app.route("/search_member_payments")
+def search_member_payments():
+
+    if "username" not in session:
+        return jsonify({"error": "Not logged in"}), 401
+
+    search_term = request.args.get("name", "").strip()
+
+    if not search_term:
+        return jsonify({"results": []})
+
+    conn = get_db()
+    cursor = conn.cursor()
+
+    cursor.execute("""
+    SELECT
+        p.id,
+        p.receipt_no,
+        p.member_id,
+        p.payment_type,
+        p.amount,
+        p.payment_date,
+        m.full_name,
+        p.payment_month,
+        p.payment_year
+    FROM payments p
+    LEFT JOIN members m ON p.member_id = m.member_id
+    WHERE LOWER(m.full_name) LIKE LOWER(%s)
+    ORDER BY p.id DESC
+    """, (f"%{search_term}%",))
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    results = []
+    for r in rows:
+        results.append({
+            "id": r[0],
+            "receipt_no": r[1],
+            "member_id": r[2],
+            "payment_type": r[3],
+            "amount": r[4],
+            "payment_date": r[5],
+            "full_name": r[6] or r[2],
+            "payment_month": r[7],
+            "payment_year": r[8]
+        })
+
+    return jsonify({"results": results})
+
+
 @app.route(
     "/payments",
     methods=["GET", "POST"]
@@ -1124,14 +1182,18 @@ def payments():
 
     cursor.execute("""
     SELECT
-        id,
-        receipt_no,
-        member_id,
-        payment_type,
-        amount,
-        payment_date
-    FROM payments
-    ORDER BY id DESC
+        p.id,
+        p.receipt_no,
+        p.member_id,
+        p.payment_type,
+        p.amount,
+        p.payment_date,
+        m.full_name,
+        p.payment_month,
+        p.payment_year
+    FROM payments p
+    LEFT JOIN members m ON p.member_id = m.member_id
+    ORDER BY p.id DESC
     LIMIT 50
     """)
 
