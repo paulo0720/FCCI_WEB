@@ -242,6 +242,9 @@ def member_registration():
         birthday = request.form["birthday"]
         email = request.form["email"]
         address = request.form["address"]
+        # Kunin ang member_since mula sa hidden input
+        # (hal. "May 2026" — combination ng month + year dropdowns)
+        member_since_input = request.form.get("member_since", "").strip()
 
         photo = request.files.get("photo")
 
@@ -262,11 +265,10 @@ def member_registration():
             email,
             birthday,
             date_registered,
-            status,
-            photo_path
+            status
         )
         VALUES
-        (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+        (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
         """,
         (
             member_id,
@@ -274,12 +276,11 @@ def member_registration():
             contact,
             address,
             0,
-            "",
+            member_since_input,
             email,
             birthday,
             datetime.now().strftime("%Y-%m-%d"),
-            "Applicant",
-            photo_filename
+            "Applicant"
         ))
 
         if photo_filename:
