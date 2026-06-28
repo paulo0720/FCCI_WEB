@@ -1030,14 +1030,14 @@ def payments():
         )
 
         cursor.execute("""
-        SELECT COUNT(*)
+        SELECT COALESCE(MAX(id), 0)
         FROM payments
         """)
 
-        count = cursor.fetchone()[0] + 1
+        max_id = cursor.fetchone()[0] + 1
 
         receipt_no = (
-            f"RCPT-{datetime.now().year}-{count:06d}"
+            f"RCPT-{datetime.now().year}-{max_id:06d}"
         )
 
         cursor.execute("""
@@ -3853,7 +3853,7 @@ def approve_applicant(member_id):
         pay_year = str(now.year)
 
     cursor.execute("""
-    SELECT COUNT(*) FROM payments
+    SELECT COALESCE(MAX(id), 0) FROM payments
     """)
     pay_count = cursor.fetchone()[0] + 1
     receipt_no = f"RCPT-{datetime.now().year}-{pay_count:06d}"
