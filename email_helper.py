@@ -3,28 +3,29 @@ import os
 import threading
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from dotenv import load_dotenv
-
-load_dotenv()
-
-GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS")
-GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
 
 
 def _send_email_now(to_email, subject, html_body):
     """
-    Ang totoong pagpapadala ng email (synchronous). Ito ay
-    tinatawag sa loob ng background thread para hindi ma-block
-    ang main request (hal. pag-save ng payment) kahit mabagal
-    o naka-timeout ang Gmail connection.
+    Ang totoong pagpapadala ng email (synchronous).
+    Tinatawag sa loob ng background thread para hindi
+    ma-block ang main request.
     """
+
+    # I-read ang env vars DITO sa loob ng function —
+    # hindi sa module level — para masigurado na
+    # naka-load na ang Render environment variables
+    GMAIL_ADDRESS = os.environ.get("GMAIL_ADDRESS", "").strip()
+    GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD", "").strip()
 
     if not to_email or "@" not in to_email:
         print(f"[EMAIL] Invalid email address: {to_email}")
         return False
 
     if not GMAIL_ADDRESS or not GMAIL_APP_PASSWORD:
-        print("[EMAIL] Walang GMAIL_ADDRESS o GMAIL_APP_PASSWORD sa .env")
+        print("[EMAIL] ERROR: Walang GMAIL_ADDRESS o GMAIL_APP_PASSWORD sa environment")
+        print(f"[EMAIL] GMAIL_ADDRESS set: {bool(GMAIL_ADDRESS)}")
+        print(f"[EMAIL] GMAIL_APP_PASSWORD set: {bool(GMAIL_APP_PASSWORD)}")
         return False
 
     try:
@@ -36,32 +37,30 @@ def _send_email_now(to_email, subject, html_body):
         html_part = MIMEText(html_body, "html")
         msg.attach(html_part)
 
-        # MAHALAGA: may timeout para hindi ito mag-hang nang
-        # walang hanggan kung naka-block o mabagal ang network
-        with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
+        with smtplib.SMTP("smtp.gmail.com", 587, timeout=15) as server:
             server.starttls()
             server.login(GMAIL_ADDRESS, GMAIL_APP_PASSWORD)
             server.sendmail(GMAIL_ADDRESS, to_email, msg.as_string())
 
-        print(f"[EMAIL] Successfully sent to {to_email}")
+        print(f"[EMAIL] ✅ Successfully sent to {to_email}")
         return True
 
+    except smtplib.SMTPAuthenticationError:
+        print(f"[EMAIL] ❌ Authentication failed - check App Password in Render env vars")
+        return False
+    except smtplib.SMTPException as e:
+        print(f"[EMAIL] ❌ SMTP error sending to {to_email}: {e}")
+        return False
     except Exception as e:
-        print(f"[EMAIL] Error sending to {to_email}: {e}")
+        print(f"[EMAIL] ❌ Unexpected error sending to {to_email}: {e}")
         return False
 
 
 def send_email(to_email, subject, html_body):
     """
-    Magpadala ng email gamit ang Gmail SMTP — TUMATAKBO SA
-    BACKGROUND THREAD para hindi ma-block ang request na
-    tumawag dito (hal. pag-save ng payment o pag-approve).
-
-    Agad itong nagre-return (hindi naghihintay matapos ang
-    email), kaya hindi kailanman magdudulot ng timeout o
-    pag-hang ang routes na gumagamit nito.
+    Magpadala ng email sa background thread —
+    hindi nag-block ang main request.
     """
-
     thread = threading.Thread(
         target=_send_email_now,
         args=(to_email, subject, html_body),
@@ -73,10 +72,8 @@ def send_email(to_email, subject, html_body):
 
 def send_welcome_email(to_email, full_name, member_id):
     """
-    Ipinapadala kapag na-approve ang isang applicant at naging
-    Official FCCI Member.
+    Welcome email kapag na-approve ang applicant.
     """
-
     subject = "🎉 Welcome to FCCI - You are now an Official Member!"
 
     html_body = f"""
@@ -109,12 +106,13 @@ def send_welcome_email(to_email, full_name, member_id):
     return send_email(to_email, subject, html_body)
 
 
-def send_payment_confirmation_email(to_email, full_name, payment_type, amount, receipt_no, payment_date):
+def send_payment_confirmation_email(
+    to_email, full_name, payment_type,
+    amount, receipt_no, payment_date
+):
     """
-    Ipinapadala kapag na-record ang isang payment (Registration Fee
-    o Monthly Contribution).
+    Payment confirmation email kapag may nabayad.
     """
-
     subject = f"✅ Payment Received - {payment_type}"
 
     html_body = f"""
