@@ -787,11 +787,12 @@ def edit_member(member_id):
         cursor.execute("""
         UPDATE members
         SET
-            full_name = %s,
-            contact = %s,
-            birthday = %s,
-            email = %s,
-            address = %s
+            full_name    = %s,
+            contact      = %s,
+            birthday     = %s,
+            email        = %s,
+            address      = %s,
+            member_since = %s
         WHERE member_id = %s
         """, (
             request.form["full_name"],
@@ -799,6 +800,7 @@ def edit_member(member_id):
             request.form["birthday"],
             request.form["email"],
             request.form["address"],
+            request.form.get("member_since", "").strip(),
             member_id
         ))
 
@@ -907,17 +909,23 @@ def check_duplicate_payment():
 
     if payment_type == "Registration Fee":
 
+        # I-check kung may existing na Registration Fee payment record
+        # sa payments table — hindi yung status ng member.
+        # Kaya kahit Active ang member, kung na-delete ang payment niya,
+        # pwede pa rin siyang mag-bayad ulit.
         cursor.execute("""
-        SELECT status FROM members WHERE member_id = %s
+        SELECT COUNT(*) FROM payments
+        WHERE member_id = %s
+        AND payment_type = 'Registration Fee'
         """, (member_id,))
 
-        row = cursor.fetchone()
+        count = cursor.fetchone()[0]
         conn.close()
 
-        if row and row[0] == "Active":
+        if count > 0:
             return jsonify({
                 "duplicate": True,
-                "message": f"Ang member na ito ({member_id}) ay Active na at nakabayad na ng Registration Fee. Hindi na ito dapat bayaran ulit."
+                "message": f"Ang member na ito ({member_id}) ay nakabayad na ng Registration Fee. Kung kailangan ng pagbabago, i-delete muna ang existing na payment record."
             })
 
         return jsonify({"duplicate": False})
@@ -1133,6 +1141,19 @@ def payments():
             SET member_id = %s
             WHERE receipt_no = %s
             """, (new_member_id, receipt_no))
+
+        elif payment_type == "Registration Fee" and not member_id.startswith("APP-"):
+            # FCCI member na pero nag-bayad ulit ng Registration Fee
+            # (hal. na-delete ang dating payment) — i-update lang
+            # ang member_since at registration_fee, huwag baguhin
+            # ang member_id at status
+            member_since_from_payment = f"{payment_month} {payment_year}"
+            cursor.execute("""
+            UPDATE members
+            SET registration_fee = 20000,
+                member_since = %s
+            WHERE member_id = %s
+            """, (member_since_from_payment, member_id))
 
         conn.commit()
 
